@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"Olivier Pisano"
+	],
+	"copyright": "Copyright © 2023, Olivier Pisano",
+	"dependencies": {
+		"derelict-sdl2": "~>2.1.4"
+	},
+	"versions": ["DerelictSDL2_Static"],
+	"description": "A minimal D application.",
+	"license": "GPL 3.0",
+	"name": "taptempo"
+}
