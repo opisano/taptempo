@@ -64,7 +64,7 @@ static immutable HSV MAX_COLOR = HSV(0, 1, 1);
 /** 
  * Linear interpolation function
  */
-double linear(double a, double b, float t) pure nothrow @nogc
+double linear(double a, double b, double t) pure nothrow @nogc
 in
 {
     assert (t >= 0 && t <= 1);
@@ -76,7 +76,6 @@ do
 
 /** 
  * Represents a color in the HSV color space. 
- * 
  */
 struct HSV 
 {

@@ -87,6 +87,9 @@ struct App
         }
     }
 
+    /** 
+     * Main loop
+     */
     void loop()
     {
         m_active = true;
@@ -204,7 +207,7 @@ private:
 
             // Draw text on a surface
             SDL_Color black = SDL_Color(0, 0, 0, 255);
-            SDL_Surface* textSurface = TTF_RenderText_Solid(m_pFont, &buffer[0], black);
+            SDL_Surface* textSurface = TTF_RenderText_Blended(m_pFont, &buffer[0], black);
             scope (exit) SDL_FreeSurface(textSurface);
 
             // Convert it to a texture
@@ -230,6 +233,9 @@ private:
         }
     }
 
+    /**
+     * Handles input 
+     */
     void doInput() @nogc 
     {
         SDL_Event event;
@@ -252,6 +258,12 @@ private:
         }
     }
 
+    /** 
+     * Handles KeyDown keyboard event.
+     * 
+     * Params:
+     *     event = contains information about the key down event.
+     */
     void doKeyDown(scope ref SDL_KeyboardEvent event) @nogc @safe
     {
         if (event.repeat == 0)
@@ -273,12 +285,16 @@ private:
         }
     }
 
+    /** 
+     * Exit main loop
+     */
     void quit() @nogc @safe
     {
         m_active = false;
         m_needToUpdate = false;
     }
 
+    /// Calculates the tap frequency in bpm
     FreqCalc m_fc;
     SDL_Renderer* m_pRenderer;
     SDL_Window* m_pWindow;
