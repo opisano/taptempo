@@ -4,10 +4,16 @@ import std.algorithm.comparison: clamp, max, min;
 
 @safe:
 
+/** 
+ * Represents a color in the RGB color space. 
+ */
 struct RGB
 {
+    /// Red channel, between 0.0 and 1.0
     double r;
+    /// Green channel, between 0.0 and 1.0
     double g;
+    /// Blue channel, between 0.0 and 1.0
     double b;
 }
 
@@ -28,15 +34,15 @@ out (rgb)
 do
 {
     // normalize input between 0.0 and 1.0
-    value = clamp(value, MIN_VALUE, MAX_VALUE);
-    immutable double t = (value - MIN_VALUE) / (MAX_VALUE - MIN_VALUE);
+    immutable t = (value.clamp(MIN_VALUE, MAX_VALUE) - MIN_VALUE) / (MAX_VALUE - MIN_VALUE);
     assert (t >= 0 && t <= 1);
 
     // Interpolate in HSV space, then convert to RBG for display
-    HSV temp;
-    temp.h = clamp(linear(MIN_COLOR.h, MAX_COLOR.h, t), 0, 360.0);
-    temp.s = clamp(linear(MIN_COLOR.s, MAX_COLOR.s, t), 0, 1.0);
-    temp.v = clamp(linear(MIN_COLOR.v, MAX_COLOR.v, t), 0, 1.0);
+    immutable temp = HSV (
+        linear(MIN_COLOR.h, MAX_COLOR.h, t).clamp(0, 360.0),
+        linear(MIN_COLOR.s, MAX_COLOR.s, t).clamp(0, 1.0),
+        linear(MIN_COLOR.v, MAX_COLOR.v, t).clamp(0, 1.0),
+    );
 
     return temp.toRGB;
 }
@@ -49,10 +55,10 @@ enum MIN_VALUE = 40.0;
 /// Maximum tempo value
 enum MAX_VALUE = 220.0;
 
-/// Color associated to minimum value 
+/// Color associated to minimum value (blue)
 static immutable HSV MIN_COLOR = HSV(240, 1, 1);
 
-/// Color associated to maximum value 
+/// Color associated to maximum value (red)
 static immutable HSV MAX_COLOR = HSV(0, 1, 1);
 
 /** 
@@ -68,13 +74,23 @@ do
     return a * (1 - t) + b * t;
 }
 
+/** 
+ * Represents a color in the HSV color space. 
+ * 
+ */
 struct HSV 
 {
+    /// Hue angle in degrees, between 0 and 360
     double h;
+    /// Saturation, between 0 and 1
     double s;
+    /// Value, between 0 and 1
     double v;
 }
 
+/** 
+ * HSV to RGB conversion.
+ */
 RGB toRGB(in HSV hsv) pure nothrow @nogc
 in 
 {
@@ -90,54 +106,31 @@ out (result)
 }
 do
 {
-    double hh = hsv.h;
-    if (hh >= 360.0)
-    {
-        hh = 0.0;
-    }
+    immutable hh = hsv.h >= 360.0 ? 0.0 : hsv.h / 60.0;
+    immutable i = cast(int) hh;
+    immutable ff = hh - i;
+    immutable p = hsv.v * (1.0 - hsv.s);
+    immutable q = hsv.v * (1.0 - (hsv.s * ff));
+    immutable t = hsv.v * (1.0 - (hsv.s * (1.0 - ff)));
 
-    hh /= 60.0;
-    int i = cast(int) hh;
-    double ff = hh - i;
-    double p = hsv.v * (1.0 - hsv.s);
-    double q = hsv.v * (1.0 - (hsv.s * ff));
-    double t = hsv.v * (1.0 - (hsv.s * (1.0 - ff)));
-
-    RGB rgb;
-    switch (i) 
+    final switch (i) 
     {
     case 0:
-        rgb.r = hsv.v;
-        rgb.g = t;
-        rgb.b = p;
-        break;
+        return RGB(hsv.v, t, p);
+
     case 1:
-        rgb.r = q;
-        rgb.g = hsv.v;
-        rgb.b = p;
-        break;
+        return RGB(q, hsv.v, p);
+
     case 2:
-        rgb.r = p;
-        rgb.g = hsv.v;
-        rgb.b = t;
-        break;
+        return RGB(p, hsv.v, t);
 
     case 3:
-        rgb.r = p;
-        rgb.g = q;
-        rgb.b = hsv.v;
-        break;
+        return RGB(p, q, hsv.v);
+
     case 4:
-        rgb.r = t;
-        rgb.g = p;
-        rgb.b = hsv.v;
-        break;
+        return RGB(t, p, hsv.v);
+
     case 5:
-    default:
-        rgb.r = hsv.v;
-        rgb.g = p;
-        rgb.b = q;
-        break;
+        return RGB(hsv.v, p, q);
     }
-    return rgb;
 }
